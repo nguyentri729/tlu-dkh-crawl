@@ -4,7 +4,7 @@
   "description": "crawl data from TLU server",
   "main": "index.js",
   "scripts": {
-    "test": "node inspect index.js",
+    "test": "nodemon node test.js",
     "start": "nodemon node index.js"
   },
   "repository": {
