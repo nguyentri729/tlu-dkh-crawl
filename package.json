@@ -1,0 +1,28 @@
+{
+  "name": "tlu-crawl",
+  "version": "1.0.0",
+  "description": "crawl data from TLU server",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nguyentri729/tlu-dkh-crawl.git"
+  },
+  "author": "nguyentri729",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/nguyentri729/tlu-dkh-crawl/issues"
+  },
+  "homepage": "https://github.com/nguyentri729/tlu-dkh-crawl#readme",
+  "devDependencies": {
+    "nodemon": "^2.0.2"
+  },
+  "dependencies": {
+    "cheerio": "^1.0.0-rc.3",
+    "request": "^2.88.2",
+    "request-promise": "^4.2.5"
+  }
+}
