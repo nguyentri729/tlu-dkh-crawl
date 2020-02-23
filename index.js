@@ -1,69 +1,137 @@
 require("dotenv").config();
-const rp = require("request-promise");
+const request = require("request-promise");
 const cheerio = require("cheerio");
 const crypto = require("crypto");
 
 const URL = "http://dkh.tlu.edu.vn/CMCSoft.IU.Web.info";
 var $;
 
-var cookie;
 //create request
-const request = async (endpoint, option = {}) => {
-  let options = {
-    uri: URL + endpoint,
-    transform: body => {
-      let $ = cheerio.load(body);
+const requests = request.defaults({
+  transform: body => {
+    $ = cheerio.load(body);
+    err_text = $("#lblErrorInfo").text();
+    if (err_text && err_text.trim()) throw err_text;
 
-      return $;
-    },
-    jar: true,
-    headers: {
-      'Host': "dkh.tlu.edu.vn",
-      "Cache-Control": " max-age=0",
-      'Origin': "http://dkh.tlu.edu.vn",
-      "Upgrade-Insecure-Requests": 1,
-      "User-Agent":
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.117 Safari/537.36",
-      'Referer': URL,
-      "Accept-Language": " en-US,en;q=0.9"
-    },
-    ...option
-  };
-  await rp(options)
-    .then(result => {
-      $ = result;
-    })
-    .catch(err => {
-      throw err;
-    });
-};
+    return $;
+  },
+  headers: {
+    "User-Agent":
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36",
+    "Sec-Fetch-Mode": "navigate",
+    "Sec-Fetch-Site": "none",
+    "Sec-Fetch-User": "?1",
+    "Accept-Language": "en-US,en;q=0.9",
+    "Cache-Control": "max-age=0",
+    Connection: "keep-alive",
+    "Accept-Encoding": "gzip, deflate, br"
+  },
+  baseUrl: URL,
+  jar: request.jar()
+});
+
 parseInputForm = () => {
+  let str = "";
   let form = $("form");
   let inputs = form.find("input");
   let data = {};
   inputs.each((i, ele) => {
     $(ele).val() ? (value = $(ele).val()) : (value = "");
     data[$(ele).attr("name")] = value;
+    str += $(ele).attr("name") + "=" + value + ";";
   });
+
   return data;
 };
 
 login = async () => {
-  await request("/login.aspx");
+  await requests.get("/");
+  await requests.get("/login.aspx");
   let formInput = parseInputForm();
   formInput["txtUserName"] = process.env.DKH_USERNAME;
   formInput["txtPassword"] = crypto
     .createHash("md5")
     .update(process.env.DKH_PASSWORD)
     .digest("hex");
-  await request("/login.aspx", {
+  await requests.post("/login.aspx", {
     form: formInput,
-    method: "POST"
+    simple: false
   });
-  // await request('/MarkAndView.aspx')
-
-  // console.log($('body').html())
 };
-login();
+fetchStudentMark = () => {
+  let studentMark = [];
+  let trTable = $("#tblStudentMark")
+    .find("tbody")
+    .find("tr");
 
+  trTable.each((i, elem) => {
+    studentMark[i] = [];
+
+    let tdTable = $(elem).find("td");
+    tdTable.each((index, td) => {
+      return (studentMark[i][index] = $(td).text());
+    });
+  });
+  //delete data of header & footer in table 
+  delete studentMark[0];
+  delete studentMark[studentMark.length - 1];
+
+
+  //format to same dkhsv.tlu.edu.vn data constructor
+  let studentMarkFormated = [];
+  studentMark.forEach((marks, index) => {
+    let [
+      stt,
+      subjectCode,
+      subjectName,
+      numberOfCredit,
+      studyTime,
+      timeThi,
+      rowExam,
+      isCounted,
+      isAccepted,
+      msv,
+      markQT,
+      markTHI,
+      mark,
+      charMark
+    ] = marks;
+    studentMarkFormated[index] = {
+      charMark,
+      mark,
+      subject: {
+        subjectCode,
+        subjectName,
+        numberOfCredit
+      },
+      details: [
+        {
+          coeffiecient: 0,
+          mark: markQT
+        },
+        {
+          coeffiecient: 0,
+          mark: markTHI
+        }
+      ]
+      ,
+      isAccepted,
+      isCounted,
+      studyTime,
+      timeThi
+    };
+  });
+  console.log(studentMarkFormated);
+  return studentMarkFormated
+  
+};
+getMarkData = async () => {
+  await requests.get("/StudentMark.aspx");
+  fetchStudentMark();
+};
+start = async () => {
+  await login();
+  await getMarkData();
+};
+start();
 debugger;
