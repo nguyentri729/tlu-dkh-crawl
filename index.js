@@ -40,6 +40,21 @@ parseInputForm = () => {
     data[$(ele).attr("name")] = value;
     str += $(ele).attr("name") + "=" + value + ";";
   });
+  let selects = form.find("select option:selected");
+
+  selects.each((i, elem) => {
+    if (
+      $(elem)
+        .parent()
+        .attr("name")
+    )
+      data[
+        $(elem)
+          .parent()
+          .attr("name")
+      ] = $(elem).val();
+  });
+  //select form
 
   return data;
 };
@@ -58,7 +73,7 @@ login = async () => {
     simple: false
   });
 };
-fetchStudentMark = () => {
+parseStudentMark = (semester = {}) => {
   let studentMark = [];
   let trTable = $("#tblStudentMark")
     .find("tbody")
@@ -72,12 +87,12 @@ fetchStudentMark = () => {
       return (studentMark[i][index] = $(td).text());
     });
   });
-  //delete data of header & footer in table 
+  //delete data of header & footer in table
   delete studentMark[0];
   delete studentMark[studentMark.length - 1];
 
-
   //format to same dkhsv.tlu.edu.vn data constructor
+
   let studentMarkFormated = [];
   studentMark.forEach((marks, index) => {
     let [
@@ -104,6 +119,7 @@ fetchStudentMark = () => {
         subjectName,
         numberOfCredit
       },
+      semester,
       details: [
         {
           coeffiecient: 0,
@@ -113,25 +129,52 @@ fetchStudentMark = () => {
           coeffiecient: 0,
           mark: markTHI
         }
-      ]
-      ,
+      ],
       isAccepted,
       isCounted,
       studyTime,
       timeThi
     };
   });
-  console.log(studentMarkFormated);
-  return studentMarkFormated
-  
+  return studentMarkFormated;
 };
-getMarkData = async () => {
+
+fetchAllMark = async () => {
   await requests.get("/StudentMark.aspx");
-  fetchStudentMark();
+  return parseStudentMark(options);
+};
+fetchSemesterMark = async () => {
+  await requests.get("/StudentMark.aspx");
+  let form = parseInputForm();
+  let options_semester = $("#drpHK option");
+  let studentMark = {}
+  await options_semester.each(async (i, option) => {
+    if ($(option).val() !== "") {
+      form.drpHK = $(option).val();
+
+      await requests.post("/StudentMark.aspx", {
+        form
+      });
+
+      let markSemester = parseStudentMark({
+        semesterCode: form.drpHK,
+        semesterName: form.drpHK
+      });
+      studentMark = markSemester
+      form = parseInputForm();
+      console.log(markSemester);
+
+      return markSemester;
+    }
+    
+  });
+  return studentMark
 };
 start = async () => {
   await login();
-  await getMarkData();
+  let x = await fetchSemesterMark();
+  console.log(x)
 };
+
 start();
 debugger;
