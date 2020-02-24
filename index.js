@@ -2,7 +2,7 @@ require("dotenv").config();
 const request = require("request-promise");
 const cheerio = require("cheerio");
 const crypto = require("crypto");
-
+const _ = require('lodash')
 const URL = "http://dkh.tlu.edu.vn/CMCSoft.IU.Web.info";
 var $;
 
@@ -141,33 +141,26 @@ parseStudentMark = (semester = {}) => {
 
 fetchAllMark = async () => {
   await requests.get("/StudentMark.aspx");
-  return parseStudentMark(options);
+  return parseStudentMark();
 };
 fetchSemesterMark = async () => {
   await requests.get("/StudentMark.aspx");
   let form = parseInputForm();
   let options_semester = $("#drpHK option");
-  let studentMark = {}
-  await options_semester.each(async (i, option) => {
-    if ($(option).val() !== "") {
-      form.drpHK = $(option).val();
-
-      await requests.post("/StudentMark.aspx", {
-        form
-      });
-
-      let markSemester = parseStudentMark({
-        semesterCode: form.drpHK,
-        semesterName: form.drpHK
-      });
-      studentMark = markSemester
-      form = parseInputForm();
-      console.log(markSemester);
-
-      return markSemester;
-    }
-    
-  });
+  let studentMark = []
+  for (let index = 0; index < options_semester.length; index++) {
+    const option = options_semester[index];
+    form.drpHK = $(option).val();
+    await requests.post("/StudentMark.aspx", {
+      form
+    });
+    let markSemester = parseStudentMark({
+      semesterCode: form.drpHK,
+      semesterName: form.drpHK
+    });
+    studentMark.push(markSemester)
+    form = parseInputForm();
+  }
   return studentMark
 };
 start = async () => {
