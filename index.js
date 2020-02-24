@@ -2,7 +2,7 @@ require("dotenv").config();
 const request = require("request-promise");
 const cheerio = require("cheerio");
 const crypto = require("crypto");
-const _ = require('lodash')
+const _ = require("lodash");
 const URL = "http://dkh.tlu.edu.vn/CMCSoft.IU.Web.info";
 var $;
 
@@ -135,19 +135,55 @@ parseStudentMark = (semester = {}) => {
       studyTime,
       timeThi
     };
+    //delete null object
+    if (studentMarkFormated[index] == null) {
+      delete studentMarkFormated[index];
+    }
   });
-  return studentMarkFormated;
+
+  //Get mark of year
+  let markYearTable = $("#grdResult tbody tr td");
+  //console.log(markYearTable.length)
+  let markYear = [];
+  let index = 0;
+  let markYearFor = [];
+  for (let i = 14; i < markYearTable.length; i++) {
+    markYearFor.push(
+      $(markYearTable[i])
+        .text()
+        .trim()
+    );
+    if ((i + 1) % 14 === 0) {
+      index++;
+      if (index >= 1) {
+        markYear.push({
+          semester:
+            markYearFor[1] === "Cả Năm" || markYearFor[0] === "Toàn khóa"
+              ? markYearFor[0]
+              : markYearFor[0] + "_" + markYearFor[1],
+          tbtl: markYearFor[4],
+          tbc: markYearFor[10]
+        });
+        markYearFor = [];
+      }
+    }
+  }
+  return {
+    markYear,
+    studentMarkFormated
+  };
 };
 
 fetchAllMark = async () => {
   await requests.get("/StudentMark.aspx");
+
   return parseStudentMark();
 };
 fetchSemesterMark = async () => {
   await requests.get("/StudentMark.aspx");
   let form = parseInputForm();
   let options_semester = $("#drpHK option");
-  let studentMark = []
+  let studentMark = [];
   for (let index = 0; index < options_semester.length; index++) {
     const option = options_semester[index];
     form.drpHK = $(option).val();
@@ -158,15 +194,16 @@ fetchSemesterMark = async () => {
       semesterCode: form.drpHK,
       semesterName: form.drpHK
     });
-    studentMark.push(markSemester)
+    studentMark.push(markSemester);
     form = parseInputForm();
   }
-  return studentMark
+  return studentMarkfetchSemesterMark;
 };
+
 start = async () => {
   await login();
-  let x = await fetchSemesterMark();
-  console.log(x)
+  let x = await fetchAllMark();
+  console.log(JSON.stringify(x));
 };
 
 start();
