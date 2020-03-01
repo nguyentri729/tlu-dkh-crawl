@@ -134,22 +134,47 @@ const parseStudentMark = ($, semester = {}) => {
   };
 };
 /*
-Parse selection option
+Parse studentTime Table
 */
-const parseStudentTimeTable = async ($) => {
-    let tr = $('#gridRegistered tbody tr td')
-    /*
+const parseStudentTimeTable = async $ => {
+  let tr = $("#gridRegistered tbody tr td");
+  /*
     regex time: const regex = /(Từ ([0-9/]*) đến ([0-9/]*): (\([1-9]\))(\s*Thứ ([2-7]*) tiết (.*?) (\(.*?\))){1,}){1,}/gm;
-
+    regex room: (\[T([2-7])\] (.*)){1,}
     */
-    for (let index = 0; index < tr.length; index++) {
-        const element = $(tr[index]).text().trim();
-        console.log(element)
-        
+  let count = 0;
+  let table = [];
+  //set i = 10 & length-10 to skip header & footer tr
+  for (let i = 10; i < tr.length - 10; i++) {
+    if (i % 10 == 0 && i != 10) {
+      table.push({
+        subjectLearn,
+        courseSubject : {
+
+        }
+      });
+      count = 0;
     }
+    let elementText = $(tr[i])
+      .text()
+      .trim();
+    count++;
+    count == 2 ? (displayName = elementText) : "";
+    count == 4 ? (timeLearn = elementText) : "";
+    count == 5 ? (roomLearn = elementText) : "";
+  }
+  console.log(table);
+};
+/*
+format timeLearn string to object
+*/
+const formatTimeLearn = (timeLearn, roomLearn) => {
+    
+
 }
 module.exports = {
-    parseInputForm,
-    parseStudentMark,
-    parseStudentTimeTable
-}
+  parseInputForm,
+  parseStudentMark,
+  parseStudentTimeTable,
+  formatTimeLearn
+};
