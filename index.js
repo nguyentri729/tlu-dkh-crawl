@@ -3,7 +3,7 @@ const request = require("request-promise");
 const cheerio = require("cheerio");
 const crypto = require("crypto");
 const _ = require("lodash");
-const { parseStudentMark, parseInputForm } = require("./parseFunc");
+const { parseStudentMark, parseInputForm, parseStudentTimeTable } = require("./parseFunc");
 const URL = "http://dkh.tlu.edu.vn/CMCSoft.IU.Web.info";
 var $;
 
@@ -80,6 +80,8 @@ fetchStudentTimeTable = async () => {
   let secondSemester = $("#drpSemester option")
     .next()
     .val();
+  
+ 
   //Get term in first semester
   let options = $("#drpTerm option");
   for (let index = 0; index < options.length; index++) {
@@ -90,10 +92,13 @@ fetchStudentTimeTable = async () => {
     form = parseInputForm($);
   }
 
+  
   //get term in second semester
   form.drpSemester = "3405451fd482446a96baaae42060a689";
   await requests.post("/Reports/Form/StudentTimeTable.aspx", { form });
-  let options = $("#drpTerm option");
+  parseStudentTimeTable($)
+  return true
+  options = $("#drpTerm option");
   for (let index = 0; index < options.length; index++) {
     let term = $(options[index]).val();
     //fetch data with term

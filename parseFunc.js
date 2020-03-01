@@ -136,10 +136,20 @@ const parseStudentMark = ($, semester = {}) => {
 /*
 Parse selection option
 */
-const parseSelectOption = async (option) => {
-    
+const parseStudentTimeTable = async ($) => {
+    let tr = $('#gridRegistered tbody tr td')
+    /*
+    regex time: const regex = /(Từ ([0-9/]*) đến ([0-9/]*): (\([1-9]\))(\s*Thứ ([2-7]*) tiết (.*?) (\(.*?\))){1,}){1,}/gm;
+
+    */
+    for (let index = 0; index < tr.length; index++) {
+        const element = $(tr[index]).text().trim();
+        console.log(element)
+        
+    }
 }
 module.exports = {
     parseInputForm,
-    parseStudentMark
+    parseStudentMark,
+    parseStudentTimeTable
 }
