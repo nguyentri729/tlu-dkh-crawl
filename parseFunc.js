@@ -149,29 +149,74 @@ const parseStudentTimeTable = async $ => {
     if (i % 10 == 0 && i != 10) {
       table.push({
         subjectLearn,
-        courseSubject : {
-
+        courseSubject: {
+          timeLearn,
+          roomLearn
         }
       });
+      console.log(formatTimeLearn(timeLearn, roomLearn));
       count = 0;
     }
-    let elementText = $(tr[i])
-      .text()
-      .trim();
+    let elementText = $(tr[i]);
     count++;
-    count == 2 ? (displayName = elementText) : "";
-    count == 4 ? (timeLearn = elementText) : "";
-    count == 5 ? (roomLearn = elementText) : "";
+    count == 2 ? (subjectLearn = elementText.text().trim()) : "";
+    count == 4 ? (timeLearn = elementText.text().trim()) : "";
+    count == 5 ? (roomLearn = elementText.html().trim()) : "";
   }
-  console.log(table);
+  //console.log(table);
 };
 /*
 format timeLearn string to object
 */
 const formatTimeLearn = (timeLearn, roomLearn) => {
-    
+  /* Format 1 */
+  const regex = /(Từ ([0-9/]*) đến ([0-9/]*): (\([1-9]\)){0,})/gm;
+  //let timeLearn = `Từ 14/01/2019 đến 27/01/2019: (1)   Thứ 2 tiết 4,5,6 (LT)   Thứ 4 tiết 1,2,3 (LT)Từ 18/02/2019 đến 31/03/2019: (2)   Thứ 2 tiết 4,5,6 (LT)   Thứ 4 tiết 1,2,3 (LT)`;
+ // var roomLearn = `303-MT A5`;
+  timeLearn = timeLearn.replace(")Từ", ")\nTừ");
+  i = 0;
+  learnTable = [];
+  const regexRoom = /(\[T([2-7])\] (.*)){1,}/gm;
+  roomLearn = roomLearn.replace("<br>", "\n");
+  let roomAndDay = [];
+  while ((n = regexRoom.exec(roomLearn)) !== null) {
+    if (n.index === regexRoom.lastIndex) {
+      regexRoom.lastIndex++;
+    }
+    roomAndDay.push({
+      dayOfWeek: n[2],
+      room: n[3]
+    });
+  }
+  if (roomAndDay.length == 0) {
+    roomAndDay.push( 
+      {
+        dayOfWeek: 0,
+        room: unescape(roomLearn)
+      })
+    ;
+  }
+  while ((m = regex.exec(timeLearn)) !== null) {
+    i++;
+    // This is necessary to avoid infinite loops with zero-width matches
+    if (m.index === regex.lastIndex) {
+      regex.lastIndex++;
+    }
 
-}
+    //rome regular
+    learnTable.push({
+      startDay: m[2],
+      endDay: m[3],
+      roomAndDay
+    });
+  }
+  if (learnTable.length == 0) {
+    console.log(timeLearn)
+    console.log(roomLearn)
+    return
+  }
+  return JSON.stringify(learnTable)
+};
 module.exports = {
   parseInputForm,
   parseStudentMark,
