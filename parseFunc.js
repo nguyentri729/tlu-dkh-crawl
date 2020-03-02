@@ -172,20 +172,29 @@ const formatTimeLearn = (timeLearn, roomLearn) => {
   // var roomLearn = `303-MT A5`;
   timeLearn = timeLearn.replace(")Từ", ")\nTừ");
   learnTable = [];
-  const regexRoom = /(\[T([2-7])\] (.*)){1,}/gm;
+  const regexRoom = /\[T(\d){1,}\]/gm;
   const regexTime = /(Thứ ([2-9]) tiết (.*?) )/gm;
 
-  roomLearn = roomLearn.replace("<br>", "\n");
+  roomLearn = roomLearn.split('<br>');
   let roomAndDay = [];
-  while ((n = regexRoom.exec(roomLearn)) !== null) {
-    if (n.index === regexRoom.lastIndex) {
-      regexRoom.lastIndex++;
-    }
-    //console.log(n)
-    roomAndDay.push({
-      dayOfWeek: n[2],
-      room: n[3]
-    });
+  for (let index = 0; index < roomLearn.length; index++) {
+    var str_room = roomLearn[index]
+    let str_rp = ''
+     let dayOfWeek = ''
+     while ((n = regexRoom.exec(str_room)) !== null) {
+        if (n.index === regexRoom.lastIndex) {
+            regexRoom.lastIndex++;
+        }
+        str_rp += n[0] + ' '
+        dayOfWeek += n[1] + ','
+       // console.log(n)
+     }
+     str_room = str_room.replace(str_rp, '')
+     dayOfWeek = dayOfWeek.substring(0, dayOfWeek.length - 1)
+     roomAndDay.push({
+        dayOfWeek,
+        room: str_room
+     })
   }
   //RomeAndDay error
   if (roomAndDay.length == 0) {
@@ -193,15 +202,18 @@ const formatTimeLearn = (timeLearn, roomLearn) => {
       dayOfWeek: 0,
       room: unescape(roomLearn)
     });
-  }
+  }  
+  
   //Tu ngay bao nhieu den ngay bao  nhieu
+  let lession = []
   while ((m = regex.exec(timeLearn)) !== null) {
-    let lession = []
+    lession = []
     if (m.index === regex.lastIndex) {
       regex.lastIndex++;
     }
-   
+    
     while ((t = regexTime.exec(m.input)) !== null) {
+      
       if (t.index === regexTime.lastIndex) {
         regexTime.lastIndex++;
       }
