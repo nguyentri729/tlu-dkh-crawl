@@ -148,11 +148,8 @@ const parseStudentTimeTable = $ => {
   for (let i = 10; i < tr.length - 10; i++) {
     if (i % 10 == 0 && i != 10) {
       table.push({
-        subjectLearn,
-        courseSubject: {
-          displayName: subjectLearn,
-          timetables: formatTimeLearn(timeLearn, roomLearn)
-        }
+        displayName: subjectLearn,
+        timetables: formatTimeLearn(timeLearn, roomLearn)
       });
       // console.log(formatTimeLearn(timeLearn, roomLearn))
       count = 0;
@@ -170,12 +167,14 @@ format timeLearn string to object
 */
 const formatTimeLearn = (timeLearn, roomLearn) => {
   /* Format 1 */
-  const regex = /(Từ ([0-9/]*) đến ([0-9/]*):( \([1-9]\)){0,})/gm;
+  const regex = /(Từ ([0-9/]*) đến ([0-9/]*):( \([1-9]\)){0,}.*)/gm;
   //let timeLearn = `Từ 14/01/2019 đến 27/01/2019: (1)   Thứ 2 tiết 4,5,6 (LT)   Thứ 4 tiết 1,2,3 (LT)Từ 18/02/2019 đến 31/03/2019: (2)   Thứ 2 tiết 4,5,6 (LT)   Thứ 4 tiết 1,2,3 (LT)`;
   // var roomLearn = `303-MT A5`;
   timeLearn = timeLearn.replace(")Từ", ")\nTừ");
   learnTable = [];
   const regexRoom = /(\[T([2-7])\] (.*)){1,}/gm;
+  const regexTime = /(Thứ ([2-9]) tiết (.*?) )/gm;
+
   roomLearn = roomLearn.replace("<br>", "\n");
   let roomAndDay = [];
   while ((n = regexRoom.exec(roomLearn)) !== null) {
@@ -195,17 +194,30 @@ const formatTimeLearn = (timeLearn, roomLearn) => {
       room: unescape(roomLearn)
     });
   }
+  //Tu ngay bao nhieu den ngay bao  nhieu
   while ((m = regex.exec(timeLearn)) !== null) {
-    // This is necessary to avoid infinite loops with zero-width matches
+    let lession = []
     if (m.index === regex.lastIndex) {
       regex.lastIndex++;
     }
-    //rome regular
-    learnTable.push({
+   
+    while ((t = regexTime.exec(m.input)) !== null) {
+      if (t.index === regexTime.lastIndex) {
+        regexTime.lastIndex++;
+      }
+      lession.push({
+        dayOfWeek: t[2],
+        lessions: t[3]
+      })
+    }
+     //rome regular
+     learnTable.push({
       startDay: m[2],
       endDay: m[3],
+      lession,
       roomAndDay
     });
+   // console.log(m)
   }
 
   return learnTable;
