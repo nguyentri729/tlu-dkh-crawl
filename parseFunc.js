@@ -136,7 +136,7 @@ const parseStudentMark = ($, semester = {}) => {
 /*
 Parse studentTime Table
 */
-const parseStudentTimeTable = async $ => {
+const parseStudentTimeTable = $ => {
   let tr = $("#gridRegistered tbody tr td");
   /*
     regex time: const regex = /(Từ ([0-9/]*) đến ([0-9/]*): (\([1-9]\))(\s*Thứ ([2-7]*) tiết (.*?) (\(.*?\))){1,}){1,}/gm;
@@ -150,11 +150,11 @@ const parseStudentTimeTable = async $ => {
       table.push({
         subjectLearn,
         courseSubject: {
-          timeLearn,
-          roomLearn
+          displayName: subjectLearn,
+          timetables: formatTimeLearn(timeLearn, roomLearn)
         }
       });
-      console.log(formatTimeLearn(timeLearn, roomLearn));
+      // console.log(formatTimeLearn(timeLearn, roomLearn))
       count = 0;
     }
     let elementText = $(tr[i]);
@@ -163,18 +163,17 @@ const parseStudentTimeTable = async $ => {
     count == 4 ? (timeLearn = elementText.text().trim()) : "";
     count == 5 ? (roomLearn = elementText.html().trim()) : "";
   }
-  //console.log(table);
+  return table;
 };
 /*
 format timeLearn string to object
 */
 const formatTimeLearn = (timeLearn, roomLearn) => {
   /* Format 1 */
-  const regex = /(Từ ([0-9/]*) đến ([0-9/]*): (\([1-9]\)){0,})/gm;
+  const regex = /(Từ ([0-9/]*) đến ([0-9/]*):( \([1-9]\)){0,})/gm;
   //let timeLearn = `Từ 14/01/2019 đến 27/01/2019: (1)   Thứ 2 tiết 4,5,6 (LT)   Thứ 4 tiết 1,2,3 (LT)Từ 18/02/2019 đến 31/03/2019: (2)   Thứ 2 tiết 4,5,6 (LT)   Thứ 4 tiết 1,2,3 (LT)`;
- // var roomLearn = `303-MT A5`;
+  // var roomLearn = `303-MT A5`;
   timeLearn = timeLearn.replace(")Từ", ")\nTừ");
-  i = 0;
   learnTable = [];
   const regexRoom = /(\[T([2-7])\] (.*)){1,}/gm;
   roomLearn = roomLearn.replace("<br>", "\n");
@@ -183,26 +182,24 @@ const formatTimeLearn = (timeLearn, roomLearn) => {
     if (n.index === regexRoom.lastIndex) {
       regexRoom.lastIndex++;
     }
+    //console.log(n)
     roomAndDay.push({
       dayOfWeek: n[2],
       room: n[3]
     });
   }
+  //RomeAndDay error
   if (roomAndDay.length == 0) {
-    roomAndDay.push( 
-      {
-        dayOfWeek: 0,
-        room: unescape(roomLearn)
-      })
-    ;
+    roomAndDay.push({
+      dayOfWeek: 0,
+      room: unescape(roomLearn)
+    });
   }
   while ((m = regex.exec(timeLearn)) !== null) {
-    i++;
     // This is necessary to avoid infinite loops with zero-width matches
     if (m.index === regex.lastIndex) {
       regex.lastIndex++;
     }
-
     //rome regular
     learnTable.push({
       startDay: m[2],
@@ -210,12 +207,8 @@ const formatTimeLearn = (timeLearn, roomLearn) => {
       roomAndDay
     });
   }
-  if (learnTable.length == 0) {
-    console.log(timeLearn)
-    console.log(roomLearn)
-    return
-  }
-  return JSON.stringify(learnTable)
+
+  return learnTable;
 };
 module.exports = {
   parseInputForm,
