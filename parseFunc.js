@@ -145,7 +145,7 @@ const parseStudentTimeTable = $ => {
   let count = 0;
   let table = [];
   //set i = 10 & length-10 to skip header & footer tr
-  for (let i = 10; i < tr.length - 10; i++) {
+  for (let i = 10; i < tr.length; i++) {
     if (i % 10 == 0 && i != 10) {
       table.push({
         displayName: subjectLearn,
