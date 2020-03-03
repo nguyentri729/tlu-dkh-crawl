@@ -1,3 +1,4 @@
+const _ = require('lodash')
 /*
 Parse Input of Form
 */
@@ -187,7 +188,7 @@ const formatTimeLearn = (timeLearn, roomStr) => {
       //lession format
       while ((l = lessionRegex.exec(n.input)) !== null) {
         learnObj.timeLearn.push({
-          dayOfWeek: l[2],
+          dayOfWeek: parseInt(l[2]),
           lesson: l[3]
         });
       }
@@ -213,7 +214,7 @@ const formatTimeLearn = (timeLearn, roomStr) => {
             roomArr[j] = roomArr[j].replace("<br>", "");
             while ((r = roomRegex.exec(roomArr[j])) !== null) {
               cac.push({
-                dayOfWeek: r[2],
+                dayOfWeek: parseInt(r[2]),
                 room: r[3]
               });
 
@@ -221,7 +222,7 @@ const formatTimeLearn = (timeLearn, roomStr) => {
             }
             if (cac.length == 0) {
               learnObj.roomLearn = {
-                dayOfWeek: 0,
+                dayOfWeek: "all",
                 room: roomStr
               };
             } else {
@@ -241,9 +242,68 @@ const formatTimeLearn = (timeLearn, roomStr) => {
   */
   return timetable;
 };
+const sortByDay = studentTable => {
+  var dayLearn = [];
+  for (let i = 0; i < studentTable.length; i++) {
+    const subject = studentTable[i];
+    var { displayName } = subject;
+    for (let j = 0; j < subject.timetables.length; j++) {
+      var { timeStart, timeEnd, timeLearn, roomLearn } = subject.timetables[j];
+      timeStart = timeStart.split("/");
+      timeEnd = timeEnd.split("/");
+      timeStart = new Date(timeStart[2], timeStart[1], timeStart[0]);
+      timeEnd = new Date(timeEnd[2], timeEnd[1], timeEnd[0]);
+
+      while (timeStart < timeEnd) {
+        var thu = timeStart.getDay() + 2;
+        let lessonIndex = _.findIndex(timeLearn, { dayOfWeek: thu });
+        let roomIndex = _.findIndex(roomLearn, { dayOfWeek: thu });
+
+        if (lessonIndex >= 0) {
+          //Ngay nay co di hoc
+          let { lesson } = timeLearn[lessonIndex];
+          if (roomIndex == -1) {
+            var { room } = roomLearn;
+          } else {
+            var { room } = roomLearn[roomIndex];
+          }
+          // timeStart
+          let day = Date.parse(timeStart).toString();
+
+          //find in day 
+          let dayIndex = _.findIndex(dayLearn, { date: day });
+          if (dayIndex >= 0 ) {
+            dayLearn[dayIndex]['data'].push({
+              displayName,
+              lesson,
+              room
+            })
+          }else{
+            dayLearn.push({
+              date: day,
+              thu,
+              data: [{
+                displayName,
+                lesson,
+                room
+              }]
+            })
+          }
+          
+          //console.log(Date.parse(timeStart), lesson, room)
+        }
+        var newDate = timeStart.setDate(timeStart.getDate() + 1);
+        timeStart = new Date(newDate);
+      }
+    }
+  }
+ // var rt = dayLearn.sort()
+  return _.sortBy(dayLearn, ['date']);
+};
 module.exports = {
   parseInputForm,
   parseStudentMark,
   parseStudentTimeTable,
-  formatTimeLearn
+  formatTimeLearn,
+  sortByDay
 };

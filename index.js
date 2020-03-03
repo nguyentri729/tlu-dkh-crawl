@@ -3,7 +3,7 @@ const request = require("request-promise");
 const cheerio = require("cheerio");
 const crypto = require("crypto");
 const _ = require("lodash");
-const { parseStudentMark, parseInputForm, parseStudentTimeTable, formatTimeLearn } = require("./parseFunc");
+const { parseStudentMark, parseInputForm, parseStudentTimeTable, sortByDay } = require("./parseFunc");
 const URL = "http://dkh.tlu.edu.vn/CMCSoft.IU.Web.info";
 var $;
 
@@ -72,16 +72,17 @@ fetchSemesterMark = async () => {
   return studentMarkfetchSemesterMark;
 };
 fetchStudentTimeTable = async () => {
+  var studentTimeTable = []
   await requests.get("/Reports/Form/StudentTimeTable.aspx");
-  let form = parseInputForm($);
-  let firstSemester = $("#drpSemester option")
+  var form = parseInputForm($);
+  var firstSemester = $("#drpSemester option")
     .first()
     .val();
-  let secondSemester = $("#drpSemester option")
+  var secondSemester = $("#drpSemester option")
     .next()
     .val();
-  
- 
+  //var firstSemester = '3405451fd482446a96baaae42060a689'
+ // var secondSemester = '5fe719be702e472b8b0197c17dd4d770'
   //Get term in first semester
   let options = $("#drpTerm option");
   for (let index = 0; index < options.length; index++) {
@@ -90,19 +91,15 @@ fetchStudentTimeTable = async () => {
     form.drpTerm = term;
     await requests.post("/Reports/Form/StudentTimeTable.aspx", { form });
     form = parseInputForm($);
+    studentTimeTable = [...studentTimeTable, ...parseStudentTimeTable($) ]
   }
+  studentTimeTable = [...studentTimeTable, ...parseStudentTimeTable($) ]
 
-  
+ 
   //get term in second semester
-  form.drpSemester = "3405451fd482446a96baaae42060a689";
+  form.drpSemester = secondSemester;
   await requests.post("/Reports/Form/StudentTimeTable.aspx", { form });
-  
-  let studentTable = parseStudentTimeTable($)
-  
-  console.log(JSON.stringify(studentTable))
-  //start parse in
-  //console.log(studentTable)
-  return
+  form = parseInputForm($);
   options = $("#drpTerm option");
   for (let index = 0; index < options.length; index++) {
     let term = $(options[index]).val();
@@ -110,13 +107,17 @@ fetchStudentTimeTable = async () => {
     form.drpTerm = term;
     await requests.post("/Reports/Form/StudentTimeTable.aspx", { form });
     form = parseInputForm($);
+    studentTimeTable = [...studentTimeTable, ...parseStudentTimeTable($) ]
   }
+ // console.log(studentTimeTable)
+  return sortByDay(studentTimeTable)
 };
 start = async () => {
   await login();
 
   //fetch select semester
-  await fetchStudentTimeTable();
+  var x = await fetchStudentTimeTable();
+  console.log(JSON.stringify(x))
 };
 
 start();
