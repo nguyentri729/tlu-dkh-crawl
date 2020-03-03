@@ -165,74 +165,81 @@ const parseStudentTimeTable = $ => {
 /*
 format timeLearn string to object
 */
-const formatTimeLearn = (timeLearn, roomLearn) => {
-  /* Format 1 */
-  const regex = /(Từ ([0-9/]*) đến ([0-9/]*):( \([1-9]\)){0,}.*)/gm;
-  //let timeLearn = `Từ 14/01/2019 đến 27/01/2019: (1)   Thứ 2 tiết 4,5,6 (LT)   Thứ 4 tiết 1,2,3 (LT)Từ 18/02/2019 đến 31/03/2019: (2)   Thứ 2 tiết 4,5,6 (LT)   Thứ 4 tiết 1,2,3 (LT)`;
-  // var roomLearn = `303-MT A5`;
-  timeLearn = timeLearn.replace(")Từ", ")\nTừ");
-  learnTable = [];
-  const regexRoom = /\[T(\d){1,}\]/gm;
-  const regexTime = /(Thứ ([2-9]) tiết (.*?) )/gm;
+const formatTimeLearn = (timeLearn, roomStr) => {
+  const lessionRegex = /(Thứ ([2-9]) tiết (.*?) )/gm;
+  const timeRegex = /( ([0-9/]*) đến ([0-9/]*):( \([1-9]\)){0,}.*)/gm;
+  const roomRegex = /(\[T([2-7])\] (.*)){1,}/gm;
+  var timeLearn = timeLearn.split("Từ");
 
-  roomLearn = roomLearn.split('<br>');
-  let roomAndDay = [];
-  for (let index = 0; index < roomLearn.length; index++) {
-    var str_room = roomLearn[index]
-    let str_rp = ''
-     let dayOfWeek = ''
-     while ((n = regexRoom.exec(str_room)) !== null) {
-        if (n.index === regexRoom.lastIndex) {
-            regexRoom.lastIndex++;
-        }
-        str_rp += n[0] + ' '
-        dayOfWeek += n[1] + ','
-       // console.log(n)
-     }
-     str_room = str_room.replace(str_rp, '')
-     dayOfWeek = dayOfWeek.substring(0, dayOfWeek.length - 1)
-     roomAndDay.push({
-        dayOfWeek,
-        room: str_room
-     })
-  }
-  //RomeAndDay error
-  if (roomAndDay.length == 0) {
-    roomAndDay.push({
-      dayOfWeek: 0,
-      room: unescape(roomLearn)
-    });
-  }  
-  
-  //Tu ngay bao nhieu den ngay bao  nhieu
-  let lession = []
-  while ((m = regex.exec(timeLearn)) !== null) {
-    lession = []
-    if (m.index === regex.lastIndex) {
-      regex.lastIndex++;
-    }
-    
-    while ((t = regexTime.exec(m.input)) !== null) {
-      
-      if (t.index === regexTime.lastIndex) {
-        regexTime.lastIndex++;
+  var timetable = [];
+  for (let i = 0; i < timeLearn.length; i++) {
+    var index = 0;
+    var learnObj = {};
+    while ((n = timeRegex.exec(timeLearn[i])) !== null) {
+      //check index of days
+      if (n[4]) {
+        index = n[4].substr(2, n[4].length - 3);
       }
-      lession.push({
-        dayOfWeek: t[2],
-        lessions: t[3]
-      })
-    }
-     //rome regular
-     learnTable.push({
-      startDay: m[2],
-      endDay: m[3],
-      lession,
-      roomAndDay
-    });
-   // console.log(m)
-  }
+      learnObj.timeStart = n[2];
+      learnObj.timeEnd = n[3];
+      //start fetch time learn
+      learnObj.timeLearn = [];
+      //lession format
+      while ((l = lessionRegex.exec(n.input)) !== null) {
+        learnObj.timeLearn.push({
+          dayOfWeek: l[2],
+          lesson: l[3]
+        });
+      }
+      if (true) {
+        roomArr = roomStr.split("<br>");
+        var cac = [];
+        var indexForJ = [];
+        for (let j = 0; j < roomArr.length; j++) {
+          //console.log(roomLearn[j])
+          //Khong tim thay
+          let str = roomArr[j];
+          if (str.search("<b>") >= 0) {
+            indexForJ = str.substr(4, str.length - 9).split(",");
+          }
+          //check index and indexforJ
+          if (
+            indexForJ.includes(index) ||
+            indexForJ.length == 0 ||
+            index == 0
+          ) {
+            //console.log('kiem tra index for ok !!!')
 
-  return learnTable;
+            roomArr[j] = roomArr[j].replace("<br>", "");
+            while ((r = roomRegex.exec(roomArr[j])) !== null) {
+              cac.push({
+                dayOfWeek: r[2],
+                room: r[3]
+              });
+
+              // learnObj.roomLearn.push();
+            }
+            if (cac.length == 0) {
+              learnObj.roomLearn = {
+                dayOfWeek: 0,
+                room: roomStr
+              };
+            } else {
+              learnObj.roomLearn = cac;
+            }
+          }
+        }
+      }
+    }
+    if (learnObj.timeStart) {
+      timetable.push(learnObj);
+    }
+  }
+  /*
+    Đoạn bóc tách khá cồng kềnh nên méo hiểu mình code gì luôn :3 chán !!!!
+    cơ mà vẫn return đúng là oke dồi :V kaka
+  */
+  return timetable;
 };
 module.exports = {
   parseInputForm,

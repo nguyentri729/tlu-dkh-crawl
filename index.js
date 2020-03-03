@@ -96,9 +96,9 @@ fetchStudentTimeTable = async () => {
   //get term in second semester
   form.drpSemester = "3405451fd482446a96baaae42060a689";
   await requests.post("/Reports/Form/StudentTimeTable.aspx", { form });
-  debugger
+  
   let studentTable = parseStudentTimeTable($)
-  debugger
+  
   console.log(JSON.stringify(studentTable))
   //start parse in
   //console.log(studentTable)

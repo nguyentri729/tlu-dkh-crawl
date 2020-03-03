@@ -35,30 +35,44 @@ var tkb = [
   //fetch regex
   
   var timeLearn =
-    "Từ 15/04/2019 đến 28/04/2019: (1)   Thứ 2 tiết 1,2,3 (LT)   Thứ 4 tiết 1,2,3 (LT)Từ 29/04/2019 đến 05/05/2019: (2)   Thứ 2 tiết 1,2,3 (LT)   Thứ 4 tiết 1,2,3 (LT)   Thứ 7 tiết 1,2,3 (LT)Từ 06/05/2019 đến 12/05/2019: (3)   Thứ 2 tiết 1,2,3 (LT)   Thứ 4 tiết 1,2,3 (LT)   Thứ 7 tiết 1,2,3 (LT)Từ 13/05/2019 đến 09/06/2019: (4)   Thứ 2 tiết 1,2,3 (LT)   Thứ 4 tiết 1,2,3 (LT)";
+  "Từ 15/04/2019 đến 09/06/2019:   Thứ 3 tiết 1,2 (LT)   Thứ 5 tiết 1,2 (LT)"
   
   const lessionRegex = /(Thứ ([2-9]) tiết (.*?) )/gm;
   const timeRegex = /( ([0-9/]*) đến ([0-9/]*):( \([1-9]\)){0,}.*)/gm;
   const roomRegex = /(\[T([2-7])\] (.*)){1,}/gm;
   var timeLearn = timeLearn.split("Từ");
   
-  var roomStr ="<b>(1,4)</b><br>[T2] 309 B5<br>[T4] 308 B5<br><b>(2)</b><br>[T2] 309 B5<br>[T4] 308 B5<br>[T7] 327 A2<br><b>(3)</b><br>[T2] 309 B5<br>[T4] 308 B5<br>[T7] 347 A3"
+  var roomStr ="[T3] 308 B5<br>[T5] 309 B5"
   
   // while ((r = roomRegex.exec(roomLearn)) !== null) {
   //    console.log(r)
   // }
-  
+  var timetable = []
   for (let i = 0; i < timeLearn.length; i++) {
     var index = 0;
-    var learnObj = {};
+    var learnObj = {}
     while ((n = timeRegex.exec(timeLearn[i])) !== null) {
       //check index of days
       if (n[4]) {
         index = n[4].substr(2, n[4].length - 3);
       }
-      if (roomStr.search("</b>") >= 0) {
+      learnObj.timeStart = n[2];
+      learnObj.timeEnd = n[3];
+      //start fetch time learn
+      learnObj.timeLearn = [];
+      //Xử lý lession
+      while ((l = lessionRegex.exec(n.input)) !== null) {
+        learnObj.timeLearn.push({
+          dayOfWeek: l[2],
+          lesson: l[3]
+        });
+      }
+      //Xử lý room
+      //Trường hợp 1
+      //roomStr.search("</b>") >= 0
+      if (true) {
         roomArr = roomStr.split("<br>");
-        console.log(roomArr)
+        
         var indexForJ = [];
         for (let j = 0; j < roomArr.length; j++) {
           //console.log(roomLearn[j])
@@ -77,7 +91,7 @@ var tkb = [
             var roomLearn = [];
             roomArr[j] = roomArr[j].replace('<br>', '')
             while ((r = roomRegex.exec(roomArr[j])) !== null) {
-              console.log(r)
+             
               roomLearn.push({
                 dayOfWeek: r[2],
                 room: r[3]
@@ -87,23 +101,14 @@ var tkb = [
           }
         }
       }
-      learnObj.timeStart = n[2];
-      learnObj.timeEnd = n[3];
-      //start fetch time learn
-      learnObj.timeLearn = [];
-      //Xử lý lession
-      while ((l = lessionRegex.exec(n.input)) !== null) {
-        learnObj.timeLearn.push({
-          dayOfWeek: l[2],
-          lesson: l[3]
-        });
-      }
-      //Xử lý room
-      //Trường hợp 1
-      
       
     }
-    console.log(learnObj);
+   // console.log(typeof learnObj)
+    if (learnObj.timeStart) {
+       timetable.push(learnObj)
+    }
   }
+  
+  console.log(JSON.stringify(timetable))
   //Xử lý room
   
