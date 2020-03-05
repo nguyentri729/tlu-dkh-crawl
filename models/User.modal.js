@@ -11,13 +11,15 @@ const userSchema = new Schema({
   yearLearn: String
 });
 
-userSchema.method('addUser', function() {
-   // console.log('add User !!!')
-    return this.model('User').create({
-        username: 'true',
-        password: 'true'
-    })
-    return 'ok'
+userSchema.method('addUser', async function(data) {
+    let UserModel = this.model('User')
+   
+    await UserModel.updateOne({username: data.username}, data, {upsert: true})
+    return await UserModel.findOne({username: data.username}, {password: 0 ,__v: 0, username: 0})
+})
+userSchema.method('findUser', async function(id) {
+    let UserModel = this.model('User')
+    return await UserModel.findById(id)
 })
 const User = mongoose.model('User', userSchema);
 
