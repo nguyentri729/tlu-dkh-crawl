@@ -31,14 +31,21 @@ const requests = request.defaults({
   jar: request.jar()
 });
 
-const login = async () => {
+const login = async (username = '', password = '') => {
   await requests.get("/");
   await requests.get("/login.aspx");
   let formInput = parseInputForm($);
-  formInput["txtUserName"] = process.env.DKH_USERNAME;
+  
+  if (username == '' && password == '') {
+    username = process.env.DKH_USERNAME
+    password = process.env.DKH_PASSWORD
+  }
+  
+
+  formInput["txtUserName"] = username;
   formInput["txtPassword"] = crypto
     .createHash("md5")
-    .update(process.env.DKH_PASSWORD)
+    .update(password)
     .digest("hex");
   await requests.post("/login.aspx", {
     form: formInput,
@@ -81,9 +88,7 @@ const fetchStudentTimeTable = async () => {
   var secondSemester = $("#drpSemester option")
     .next()
     .val();
-  //var firstSemester = '3405451fd482446a96baaae42060a689'
- // var secondSemester = '5fe719be702e472b8b0197c17dd4d770'
-  //Get term in first semester
+
   let options = $("#drpTerm option");
   for (let index = 0; index < options.length; index++) {
     let term = $(options[index]).val();
@@ -112,11 +117,27 @@ const fetchStudentTimeTable = async () => {
  // console.log(studentTimeTable)
   return sortByDay(studentTimeTable)
 };
+const fetchInformation = async () => {
+  await requests.get('/StudentViewExamList.aspx')
+  let studentCode = $('#lblMaSinhVien').text()
+  let yearLearn = $('#lblKhoaHoc').text()
+  let studentClass = $('#lblLop').text()
+  let studentName = $('#lblTenSinhVien').text()
+  let studentMajors = $('#lblNganhHoc').text()
 
-
-exports.defaults = {
+  return {
+    studentCode, 
+    studentName,
+    studentClass,
+    studentMajors,
+    yearLearn
+  }
+  
+}
+module.exports = {
   login, 
   fetchAllMark,
   fetchSemesterMark,
   fetchStudentTimeTable,
+  fetchInformation
 }
