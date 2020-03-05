@@ -5,7 +5,7 @@ const UserModal = require("./../../models/User.modal");
 const loginController = async (req, res) => {
   let username = req.body.username;
   let password = req.body.password;
-
+    
   try {
     await login(username, password);
     let studentInfo = await fetchInformation();

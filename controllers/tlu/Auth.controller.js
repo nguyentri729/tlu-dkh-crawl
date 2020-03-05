@@ -13,6 +13,7 @@ const Auth = async (req, res, next) => {
         let token = req.headers.authorization.split(" ")[1];
         let {_id } = jwt.verify(token, process.env.JWT_SECURE);
         req.data = await UserModel.findUser(_id)
+        req.access_token = token
         next();
       } else {
         return res.status(302).json({
