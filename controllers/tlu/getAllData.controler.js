@@ -12,18 +12,15 @@ const getAllData = async (req, res) => {
     let { username, password } = req.data;
     await login(username, password);
 
-    //let mark = await fetchSemesterMark();
+    let mark = await fetchSemesterMark();
     let timetables = await fetchStudentTimeTable();
-    //let information = await fetchInformation();
-    // res.json({
-    //   information,
-    //   mark,
-    //   timetables
-    // });
+    let information = await fetchInformation();
     res.json({
-      
+      information,
+      mark,
       timetables
     });
+   
   } catch (error) {
 
     //destroy jwt

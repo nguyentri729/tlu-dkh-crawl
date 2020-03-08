@@ -244,7 +244,7 @@ const formatTimeLearn = (timeLearn, roomStr) => {
   if start = 0, start from now day
   
 */
-const sortByDay = (studentTable, options = { limit: 30, start: 0 }) => {
+const sortByDay = (studentTable, options = { limit: 1, start: 0 }) => {
   var dayLearn = [];
   for (let i = 0; i < studentTable.length; i++) {
     const subject = studentTable[i];
@@ -266,7 +266,7 @@ const sortByDay = (studentTable, options = { limit: 30, start: 0 }) => {
       // }
       var today = new Date()
       var todayMiliseconds = Date.parse(new Date(today.getFullYear(), today.getMonth() , today.getDate())).toString();
-      var endMiliseconds = Date.parse(new Date(today.getFullYear(), today.getMonth() + 1, today.getDate())).toString();
+      var endMiliseconds = Date.parse(new Date(today.getFullYear(), today.getMonth() + options.limit, today.getDate())).toString();
       while (timeStart < timeEnd) {
         
         var thu = timeStart.getDay() + 1;
@@ -291,6 +291,7 @@ const sortByDay = (studentTable, options = { limit: 30, start: 0 }) => {
           dayLearn.push({
             date: day,
             thu,
+            info: `${timeStart.getDate()}/${timeStart.getMonth()}/${timeStart.getFullYear()}`,
             data: []
           });
         }
