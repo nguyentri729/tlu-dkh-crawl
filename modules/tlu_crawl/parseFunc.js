@@ -255,32 +255,41 @@ const sortByDay = (studentTable, options = { limit: 30, start: 0 }) => {
       timeEnd = timeEnd.split("/");
       timeStart = new Date(timeStart[2], timeStart[1] - 1, timeStart[0]);
       timeEnd = new Date(timeEnd[2], timeEnd[1] - 1, timeEnd[0]);
-      if (options.start == 0) {
-        timeStart = new Date();
-      }
-      var countDayLimit = 0;
+    //   if (options.start == 0 && timeEnd > new Date()) {
+
+    // }
+      //handle limit day 
+      // if (options.limit > 0) {
+      //   if(timeEnd > timeStart.setDate(timeStart.getMonth() + 1)) {
+      //       timeEnd = timeStart.setDate(timeStart.getMonth() + 1)
+      //   }
+      // }
+      var today = new Date()
+      var todayMiliseconds = Date.parse(new Date(today.getFullYear(), today.getMonth() , today.getDate())).toString();
+      var endMiliseconds = Date.parse(new Date(today.getFullYear(), today.getMonth() + 1, today.getDate())).toString();
       while (timeStart < timeEnd) {
-        countDayLimit++;
-        if (options.limit != 0 && options.limit <= countDayLimit) {
-          break;
-        }
+        
         var thu = timeStart.getDay() + 1;
+        var day = Date.parse(timeStart).toString();
         //Don't import Sunday into list
-        if (thu == 1) {
+        if (thu == 1 || parseInt(day) < parseInt(todayMiliseconds) || parseInt(day) > parseInt(endMiliseconds)) {
           var newDate = timeStart.setDate(timeStart.getDate() + 1);
           timeStart = new Date(newDate);
           continue;
         }
+        
         var day = Date.parse(timeStart).toString();
+        
         var findDay = _.findIndex(dayLearn, { date: day });
+        
+        // info: {
+        //   ngay: timeStart.getDate(),
+        //   thang: timeStart.getMonth() + 1,
+        //   name: timeStart.getFullYear()
+        // },
         if (findDay < 0) {
           dayLearn.push({
             date: day,
-            info: {
-              ngay: timeStart.getDate(),
-              thang: timeStart.getMonth() + 1,
-              name: timeStart.getFullYear()
-            },
             thu,
             data: []
           });
@@ -333,6 +342,8 @@ const sortByDay = (studentTable, options = { limit: 30, start: 0 }) => {
     }
   }
   // var rt = dayLearn.sort()
+
+  
   return _.sortBy(dayLearn, ["date"]);
 };
 module.exports = {
