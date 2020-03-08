@@ -243,7 +243,11 @@ const formatTimeLearn = (timeLearn, roomStr) => {
   */
   return timetable;
 };
-const sortByDay = studentTable => {
+/*
+  if start = 0, start from now day
+  
+*/
+const sortByDay = (studentTable, options = {limit: 30, start: 0}) => {
   var dayLearn = [];
   for (let i = 0; i < studentTable.length; i++) {
     const subject = studentTable[i];
@@ -254,9 +258,15 @@ const sortByDay = studentTable => {
       timeEnd = timeEnd.split("/");
       timeStart = new Date(timeStart[2], timeStart[1] -1, timeStart[0]);
       timeEnd = new Date(timeEnd[2], timeEnd[1] -1, timeEnd[0]);
-      
-
+      if (options.start == 0) {
+        timeStart = new Date()
+      }
+      var countDayLimit = 0
       while (timeStart < timeEnd) {
+        countDayLimit++
+        if (options.limit != 0 && options.limit <= countDayLimit){
+          break
+        }
         var thu = timeStart.getDay() + 1;
         //Don't import Sunday into list
         if (thu == 1) {
@@ -269,6 +279,11 @@ const sortByDay = studentTable => {
         if (findDay < 0) {
           dayLearn.push({
             date: day,
+            info : {
+              ngay: timeStart.getDate(),
+              thang: timeStart.getMonth() + 1,
+              name: timeStart.getFullYear()
+            },
             thu,
             data: []
           });
