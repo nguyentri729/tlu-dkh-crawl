@@ -31,7 +31,35 @@ const parseInputForm = $ => {
 
   return data;
 };
-
+const parseMarkYear = ($) => {
+  let markYearTable = $("#grdResult tbody tr td");
+  //console.log(markYearTable.length)
+  let markYear = [];
+  let index = 0;
+  var markYearFor = [];
+  for (let i = 14; i < markYearTable.length; i++) {
+    markYearFor.push(
+      $(markYearTable[i])
+        .text()
+        .trim()
+    );
+    if ((i + 1) % 14 === 0) {
+      index++;
+      if (index >= 1) {
+        markYear.push({
+          semester:
+            markYearFor[1] === "Cả Năm" || markYearFor[0] === "Toàn khóa"
+              ? markYearFor[0]
+              : markYearFor[0] + "_" + markYearFor[1],
+          tbtl: markYearFor[4],
+          tbc: markYearFor[10]
+        });
+        markYearFor = [];
+      }
+    }
+  }
+  return markYear
+}
 /*
 Parse Student Mark
 */
@@ -99,34 +127,6 @@ const parseStudentMark = ($, semester = {}) => {
       });
     }
   });
-
-  //Get mark of year
-  let markYearTable = $("#grdResult tbody tr td");
-  //console.log(markYearTable.length)
-  let markYear = [];
-  let index = 0;
-  let markYearFor = [];
-  for (let i = 14; i < markYearTable.length; i++) {
-    markYearFor.push(
-      $(markYearTable[i])
-        .text()
-        .trim()
-    );
-    if ((i + 1) % 14 === 0) {
-      index++;
-      if (index >= 1) {
-        markYear.push({
-          semester:
-            markYearFor[1] === "Cả Năm" || markYearFor[0] === "Toàn khóa"
-              ? markYearFor[0]
-              : markYearFor[0] + "_" + markYearFor[1],
-          tbtl: markYearFor[4],
-          tbc: markYearFor[10]
-        });
-        markYearFor = [];
-      }
-    }
-  }
   return {
     semester,
     data: studentMarkFormated
@@ -338,6 +338,7 @@ const sortByDay = (studentTable, options = { limit: 30, start: 0 }) => {
 module.exports = {
   parseInputForm,
   parseStudentMark,
+  parseMarkYear,
   parseStudentTimeTable,
   formatTimeLearn,
   sortByDay

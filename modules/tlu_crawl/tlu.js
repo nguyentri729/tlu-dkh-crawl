@@ -3,7 +3,13 @@ const request = require("request-promise");
 const cheerio = require("cheerio");
 const crypto = require("crypto");
 const _ = require("lodash");
-const { parseStudentMark, parseInputForm, parseStudentTimeTable, sortByDay } = require("./parseFunc");
+const {
+  parseStudentMark,
+  parseInputForm,
+  parseStudentTimeTable,
+  sortByDay,
+  parseMarkYear
+} = require("./parseFunc");
 const URL = "http://dkh.tlu.edu.vn/CMCSoft.IU.Web.info";
 var $;
 
@@ -31,16 +37,15 @@ const requests = request.defaults({
   jar: request.jar()
 });
 
-const login = async (username = '', password = '') => {
+const login = async (username = "", password = "") => {
   await requests.get("/");
   await requests.get("/login.aspx");
   let formInput = parseInputForm($);
-  
-  if (username == '' && password == '') {
-    username = process.env.DKH_USERNAME
-    password = process.env.DKH_PASSWORD
+
+  if (username == "" && password == "") {
+    username = process.env.DKH_USERNAME;
+    password = process.env.DKH_PASSWORD;
   }
-  
 
   formInput["txtUserName"] = username;
   formInput["txtPassword"] = crypto
@@ -76,13 +81,14 @@ const fetchSemesterMark = async () => {
     if (markSemester.data.length > 0) {
       studentMark.push(markSemester);
     }
-    
+
     form = parseInputForm($);
   }
-  return studentMark;
+
+  return { studentMark, markYear: parseMarkYear($)};
 };
 const fetchStudentTimeTable = async () => {
-  var studentTimeTable = []
+  var studentTimeTable = [];
   await requests.get("/Reports/Form/StudentTimeTable.aspx");
   var form = parseInputForm($);
   var firstSemester = $("#drpSemester option")
@@ -99,11 +105,10 @@ const fetchStudentTimeTable = async () => {
     form.drpTerm = term;
     await requests.post("/Reports/Form/StudentTimeTable.aspx", { form });
     form = parseInputForm($);
-    studentTimeTable = [...studentTimeTable, ...parseStudentTimeTable($) ]
+    studentTimeTable = [...studentTimeTable, ...parseStudentTimeTable($)];
   }
-  studentTimeTable = [...studentTimeTable, ...parseStudentTimeTable($) ]
+  studentTimeTable = [...studentTimeTable, ...parseStudentTimeTable($)];
 
- 
   //get term in second semester
   form.drpSemester = secondSemester;
   await requests.post("/Reports/Form/StudentTimeTable.aspx", { form });
@@ -115,32 +120,31 @@ const fetchStudentTimeTable = async () => {
     form.drpTerm = term;
     await requests.post("/Reports/Form/StudentTimeTable.aspx", { form });
     form = parseInputForm($);
-    studentTimeTable = [...studentTimeTable, ...parseStudentTimeTable($) ]
+    studentTimeTable = [...studentTimeTable, ...parseStudentTimeTable($)];
   }
- // console.log(studentTimeTable)
-  return sortByDay(studentTimeTable)
+  // console.log(studentTimeTable)
+  return sortByDay(studentTimeTable);
 };
 const fetchInformation = async () => {
-  await requests.get('/StudentViewExamList.aspx')
-  let studentCode = $('#lblMaSinhVien').text()
-  let yearLearn = $('#lblKhoaHoc').text()
-  let studentClass = $('#lblLop').text()
-  let studentName = $('#lblTenSinhVien').text()
-  let studentMajors = $('#lblNganhHoc').text()
+  await requests.get("/StudentViewExamList.aspx");
+  let studentCode = $("#lblMaSinhVien").text();
+  let yearLearn = $("#lblKhoaHoc").text();
+  let studentClass = $("#lblLop").text();
+  let studentName = $("#lblTenSinhVien").text();
+  let studentMajors = $("#lblNganhHoc").text();
 
   return {
-    studentCode, 
+    studentCode,
     studentName,
     studentClass,
     studentMajors,
     yearLearn
-  }
-  
-}
+  };
+};
 module.exports = {
-  login, 
+  login,
   fetchAllMark,
   fetchSemesterMark,
   fetchStudentTimeTable,
   fetchInformation
-}
+};
