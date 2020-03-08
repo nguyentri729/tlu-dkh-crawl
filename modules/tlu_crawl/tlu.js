@@ -62,7 +62,7 @@ const fetchSemesterMark = async () => {
   await requests.get("/StudentMark.aspx");
   let form = parseInputForm($);
   let options_semester = $("#drpHK option");
-  let studentMark = [];
+  var studentMark = [];
   for (let index = 0; index < options_semester.length; index++) {
     const option = options_semester[index];
     form.drpHK = $(option).val();
@@ -73,10 +73,13 @@ const fetchSemesterMark = async () => {
       semesterCode: form.drpHK,
       semesterName: form.drpHK
     });
-    studentMark.push(markSemester);
+    if (markSemester.data.length > 0) {
+      studentMark.push(markSemester);
+    }
+    
     form = parseInputForm($);
   }
-  return studentMarkfetchSemesterMark;
+  return studentMark;
 };
 const fetchStudentTimeTable = async () => {
   var studentTimeTable = []

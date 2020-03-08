@@ -73,33 +73,30 @@ const parseStudentMark = ($, semester = {}) => {
       mark,
       charMark
     ] = marks;
-    studentMarkFormated[index] = {
-      charMark,
-      mark,
-      subject: {
-        subjectCode,
-        subjectName,
-        numberOfCredit
-      },
-      semester,
-      details: [
-        {
-          coeffiecient: 0,
-          mark: markQT
+    if (mark) {
+      studentMarkFormated.push({
+        charMark,
+        mark,
+        subject: {
+          subjectCode,
+          subjectName,
+          numberOfCredit
         },
-        {
-          coeffiecient: 0,
-          mark: markTHI
-        }
-      ],
-      isAccepted,
-      isCounted,
-      studyTime,
-      timeThi
-    };
-    //delete null object
-    if (studentMarkFormated[index] == null) {
-      delete studentMarkFormated[index];
+        details: [
+          {
+            coeffiecient: 0,
+            mark: markQT
+          },
+          {
+            coeffiecient: 0,
+            mark: markTHI
+          }
+        ],
+        isAccepted,
+        isCounted,
+        studyTime,
+        timeThi
+      });
     }
   });
 
@@ -131,8 +128,8 @@ const parseStudentMark = ($, semester = {}) => {
     }
   }
   return {
-    markYear,
-    studentMarkFormated
+    semester,
+    data: studentMarkFormated
   };
 };
 /*
@@ -247,7 +244,7 @@ const formatTimeLearn = (timeLearn, roomStr) => {
   if start = 0, start from now day
   
 */
-const sortByDay = (studentTable, options = {limit: 30, start: 0}) => {
+const sortByDay = (studentTable, options = { limit: 30, start: 0 }) => {
   var dayLearn = [];
   for (let i = 0; i < studentTable.length; i++) {
     const subject = studentTable[i];
@@ -256,16 +253,16 @@ const sortByDay = (studentTable, options = {limit: 30, start: 0}) => {
       var { timeStart, timeEnd, timeLearn, roomLearn } = subject.timetables[j];
       timeStart = timeStart.split("/");
       timeEnd = timeEnd.split("/");
-      timeStart = new Date(timeStart[2], timeStart[1] -1, timeStart[0]);
-      timeEnd = new Date(timeEnd[2], timeEnd[1] -1, timeEnd[0]);
+      timeStart = new Date(timeStart[2], timeStart[1] - 1, timeStart[0]);
+      timeEnd = new Date(timeEnd[2], timeEnd[1] - 1, timeEnd[0]);
       if (options.start == 0) {
-        timeStart = new Date()
+        timeStart = new Date();
       }
-      var countDayLimit = 0
+      var countDayLimit = 0;
       while (timeStart < timeEnd) {
-        countDayLimit++
-        if (options.limit != 0 && options.limit <= countDayLimit){
-          break
+        countDayLimit++;
+        if (options.limit != 0 && options.limit <= countDayLimit) {
+          break;
         }
         var thu = timeStart.getDay() + 1;
         //Don't import Sunday into list
@@ -279,7 +276,7 @@ const sortByDay = (studentTable, options = {limit: 30, start: 0}) => {
         if (findDay < 0) {
           dayLearn.push({
             date: day,
-            info : {
+            info: {
               ngay: timeStart.getDate(),
               thang: timeStart.getMonth() + 1,
               name: timeStart.getFullYear()
@@ -288,7 +285,7 @@ const sortByDay = (studentTable, options = {limit: 30, start: 0}) => {
             data: []
           });
         }
-       
+
         let lessonIndex = _.findIndex(timeLearn, { dayOfWeek: thu });
         let roomIndex = _.findIndex(roomLearn, { dayOfWeek: thu });
 
@@ -305,15 +302,15 @@ const sortByDay = (studentTable, options = {limit: 30, start: 0}) => {
           //find in day
           let dayIndex = _.findIndex(dayLearn, { date: day });
           if (dayIndex >= 0) {
-            let lastObject = dayLearn[dayIndex]["data"]
+            let lastObject = dayLearn[dayIndex]["data"];
             let newObject = {
               displayName,
               lesson,
               room
-            }
+            };
             //sort object
             let sortObject = _.sortBy([...lastObject, newObject], ["lesson"]);
-            dayLearn[dayIndex]["data"] = sortObject
+            dayLearn[dayIndex]["data"] = sortObject;
           } else {
             dayLearn.push({
               date: day,
