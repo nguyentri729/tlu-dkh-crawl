@@ -32,12 +32,12 @@ const loginController = async (req, res) => {
         access_token
       });
     } else {
-      res.status(302).json({
+      res.status(402).json({
         error: "Hệ thống xảy ra lỗi"
       });
     }
   } catch (error) {
-    res.stauts(302).json({
+    res.status(502).json({
       error: error.message
     });
   }

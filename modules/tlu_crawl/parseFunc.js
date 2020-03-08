@@ -1,7 +1,8 @@
-const _ = require('lodash')
+const _ = require("lodash");
 /*
 Parse Input of Form
 */
+
 const parseInputForm = $ => {
   let str = "";
   let form = $("form");
@@ -251,11 +252,28 @@ const sortByDay = studentTable => {
       var { timeStart, timeEnd, timeLearn, roomLearn } = subject.timetables[j];
       timeStart = timeStart.split("/");
       timeEnd = timeEnd.split("/");
-      timeStart = new Date(timeStart[2], timeStart[1], timeStart[0]);
-      timeEnd = new Date(timeEnd[2], timeEnd[1], timeEnd[0]);
+      timeStart = new Date(timeStart[2], timeStart[1] -1, timeStart[0]);
+      timeEnd = new Date(timeEnd[2], timeEnd[1] -1, timeEnd[0]);
+      
 
       while (timeStart < timeEnd) {
-        var thu = timeStart.getDay() + 2;
+        var thu = timeStart.getDay() + 1;
+        //Don't import Sunday into list
+        if (thu == 1) {
+          var newDate = timeStart.setDate(timeStart.getDate() + 1);
+          timeStart = new Date(newDate);
+          continue;
+        }
+        var day = Date.parse(timeStart).toString();
+        var findDay = _.findIndex(dayLearn, { date: day });
+        if (findDay < 0) {
+          dayLearn.push({
+            date: day,
+            thu,
+            data: []
+          });
+        }
+       
         let lessonIndex = _.findIndex(timeLearn, { dayOfWeek: thu });
         let roomIndex = _.findIndex(roomLearn, { dayOfWeek: thu });
 
@@ -268,28 +286,33 @@ const sortByDay = studentTable => {
             var { room } = roomLearn[roomIndex];
           }
           // timeStart
-          let day = Date.parse(timeStart).toString();
 
-          //find in day 
+          //find in day
           let dayIndex = _.findIndex(dayLearn, { date: day });
-          if (dayIndex >= 0 ) {
-            dayLearn[dayIndex]['data'].push({
+          if (dayIndex >= 0) {
+            let lastObject = dayLearn[dayIndex]["data"]
+            let newObject = {
               displayName,
               lesson,
               room
-            })
-          }else{
+            }
+            //sort object
+            let sortObject = _.sortBy([...lastObject, newObject], ["lesson"]);
+            dayLearn[dayIndex]["data"] = sortObject
+          } else {
             dayLearn.push({
               date: day,
               thu,
-              data: [{
-                displayName,
-                lesson,
-                room
-              }]
-            })
+              data: [
+                {
+                  displayName,
+                  lesson,
+                  room
+                }
+              ]
+            });
           }
-          
+
           //console.log(Date.parse(timeStart), lesson, room)
         }
         var newDate = timeStart.setDate(timeStart.getDate() + 1);
@@ -297,8 +320,8 @@ const sortByDay = studentTable => {
       }
     }
   }
- // var rt = dayLearn.sort()
-  return _.sortBy(dayLearn, ['date']);
+  // var rt = dayLearn.sort()
+  return _.sortBy(dayLearn, ["date"]);
 };
 module.exports = {
   parseInputForm,
