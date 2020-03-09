@@ -31,7 +31,7 @@ const parseInputForm = $ => {
 
   return data;
 };
-const parseMarkYear = ($) => {
+const parseMarkYear = $ => {
   let markYearTable = $("#grdResult tbody tr td");
   //console.log(markYearTable.length)
   let markYear = [];
@@ -58,8 +58,8 @@ const parseMarkYear = ($) => {
       }
     }
   }
-  return markYear
-}
+  return markYear;
+};
 /*
 Parse Student Mark
 */
@@ -255,33 +255,44 @@ const sortByDay = (studentTable, options = { limit: 1, start: 0 }) => {
       timeEnd = timeEnd.split("/");
       timeStart = new Date(timeStart[2], timeStart[1] - 1, timeStart[0]);
       timeEnd = new Date(timeEnd[2], timeEnd[1] - 1, timeEnd[0]);
-    //   if (options.start == 0 && timeEnd > new Date()) {
+      //   if (options.start == 0 && timeEnd > new Date()) {
 
-    // }
-      //handle limit day 
+      // }
+      //handle limit day
       // if (options.limit > 0) {
       //   if(timeEnd > timeStart.setDate(timeStart.getMonth() + 1)) {
       //       timeEnd = timeStart.setDate(timeStart.getMonth() + 1)
       //   }
       // }
-      var today = new Date()
-      var todayMiliseconds = Date.parse(new Date(today.getFullYear(), today.getMonth() , today.getDate())).toString();
-      var endMiliseconds = Date.parse(new Date(today.getFullYear(), today.getMonth() + options.limit, today.getDate())).toString();
+      var today = new Date();
+      var todayMiliseconds = Date.parse(
+        new Date(today.getFullYear(), today.getMonth(), today.getDate())
+      ).toString();
+      var endMiliseconds = Date.parse(
+        new Date(
+          today.getFullYear(),
+          today.getMonth() + options.limit,
+          today.getDate()
+        )
+      ).toString();
       while (timeStart < timeEnd) {
-        
         var thu = timeStart.getDay() + 1;
         var day = Date.parse(timeStart).toString();
         //Don't import Sunday into list
-        if (thu == 1 || parseInt(day) < parseInt(todayMiliseconds) || parseInt(day) > parseInt(endMiliseconds)) {
+        if (
+          thu == 1 ||
+          parseInt(day) < parseInt(todayMiliseconds) ||
+          parseInt(day) > parseInt(endMiliseconds)
+        ) {
           var newDate = timeStart.setDate(timeStart.getDate() + 1);
           timeStart = new Date(newDate);
           continue;
         }
-        
+
         var day = Date.parse(timeStart).toString();
-        
+
         var findDay = _.findIndex(dayLearn, { date: day });
-        
+
         // info: {
         //   ngay: timeStart.getDate(),
         //   thang: timeStart.getMonth() + 1,
@@ -344,8 +355,35 @@ const sortByDay = (studentTable, options = { limit: 1, start: 0 }) => {
   }
   // var rt = dayLearn.sort()
 
-  
   return _.sortBy(dayLearn, ["date"]);
+};
+
+/*
+  parse student example
+*/
+const parseViewExam = $ => {
+  let listExam = $("#tblCourseList tbody tr");
+  let exam = [];
+  for (let i = 0; i < listExam.length; i++) {
+    const list = $(listExam[i]);
+    //remove header && footer
+    if (i > 0 && i !== listExam.length - 1) {
+      let x = $(list)
+        .find("td")
+        .nextAll();
+      exam.push({
+        examName: $(x[1]).text().trim(),
+        examDay: $(x[3]).text().trim(),
+        examHour: $(x[4]).text().trim(),
+        examType: $(x[5]).text().trim(),
+        code: $(x[6]).text().trim(),
+        examRoom: $(x[7]).text().trim(),
+        examNote: $(x[8]).text().trim()
+      });
+    }
+  }
+
+  return exam;
 };
 module.exports = {
   parseInputForm,
@@ -353,5 +391,6 @@ module.exports = {
   parseMarkYear,
   parseStudentTimeTable,
   formatTimeLearn,
-  sortByDay
+  sortByDay,
+  parseViewExam
 };

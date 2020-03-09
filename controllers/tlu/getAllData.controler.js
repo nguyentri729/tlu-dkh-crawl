@@ -14,11 +14,13 @@ const getAllData = async (req, res) => {
 
     let mark = await fetchSemesterMark();
     let timetables = await fetchStudentTimeTable();
-    let information = await fetchInformation();
+    let {studentInfo, exam} = await fetchInformation();
+    
     res.json({
-      information,
+      information : studentInfo,
       mark,
-      timetables
+      timetables,
+      exam
     });
    
   } catch (error) {

@@ -8,7 +8,8 @@ const {
   parseInputForm,
   parseStudentTimeTable,
   sortByDay,
-  parseMarkYear
+  parseMarkYear,
+  parseViewExam
 } = require("./parseFunc");
 const URL = "http://dkh.tlu.edu.vn/CMCSoft.IU.Web.info";
 var $;
@@ -132,15 +133,38 @@ const fetchInformation = async () => {
   let studentClass = $("#lblLop").text();
   let studentName = $("#lblTenSinhVien").text();
   let studentMajors = $("#lblNganhHoc").text();
+  let axamData = []
+  //fetch semester
+  let form = parseInputForm($);
+  let options_semester = $("#drpSemester option");
+  for (let index = 0; index < options_semester.length; index++) {
+    const option = options_semester[index];
+    form.drpSemester = $(option).val()
+    await requests.post("/StudentViewExamList.aspx", {form});
+    //parse list student
+    form = parseInputForm($);
+    if ($('#tblCourseList tbody tr').length > 2) {
+      //find first value 
+      let options_dot = $("#drpDotThi option").first().val();
+      form.drpDotThi = options_dot
+      await requests.post("/StudentViewExamList.aspx", {form});
+      axamData = parseViewExam($)
+      break
+    }
+  }
 
   return {
-    studentCode,
-    studentName,
-    studentClass,
-    studentMajors,
-    yearLearn
+    studentInfo: {
+      studentCode,
+      studentName,
+      studentClass,
+      studentMajors,
+      yearLearn
+    },
+    exam: axamData
   };
 };
+
 module.exports = {
   login,
   fetchAllMark,
