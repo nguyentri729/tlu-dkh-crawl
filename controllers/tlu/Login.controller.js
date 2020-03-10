@@ -8,7 +8,7 @@ const loginController = async (req, res) => {
     
   try {
     await login(username, password);
-    let studentInfo = await fetchInformation();
+    let {studentInfo} = await fetchInformation();
     studentInfo.username = username;
     studentInfo.password = password;
 
