@@ -1,6 +1,6 @@
 require("dotenv").config({ path: "../../.env" });
 const request = require("request-promise");
-const {parseTimeTableNew, sortByDay} = require('./parseFunc')
+const { parseTimeTableNew, sortByDay } = require("./parseFunc");
 var access_token;
 var uid;
 var $;
@@ -31,11 +31,12 @@ const login = async function(username, password) {
     client_secret: "password"
   };
   let token = await requests().post("/education/oauth/token", { form });
-  access_token = token.access_token ? token.access_token : "";
-
+  return (access_token = token.access_token ? token.access_token : "");
+};
+const fetchInformation = async function() {
   //get userInfo
   let userInfo = await requests().get("/education/api/users/getCurrentUser");
-  
+
   let { displayName, id } = userInfo.person;
   uid = id; //set uid data
   //get nganhhoc
@@ -43,29 +44,38 @@ const login = async function(username, password) {
     "/education/api/student/" + id
   );
   return {
-    studentCode,
-    studentName: displayName,
-    studentClass: enrollmentClass.className,
-    studentMajors: enrollmentClass.department.name,
-    yearLearn: enrollmentClass.schoolYear,
-    dkhID: id
+    studentInfo: {
+      studentCode,
+      studentName: displayName,
+      studentClass: enrollmentClass.className,
+      studentMajors: enrollmentClass.department.name,
+      yearLearn: enrollmentClass.schoolYear,
+      dkhID: id
+    }
   };
 };
 
-
-const timeTableFetch = async function() {
-    let {schoolYear, id} = await requests().get("/education/api/semester/semester_info");
-    let timeTableNonFomart = await requests().get("/education/api/StudentCourseSubject/student/0/" + id);
-    let timetableData = parseTimeTableNew(schoolYear.startDate, timeTableNonFomart)
-    console.log(JSON.stringify(sortByDay(timetableData, options = { limit: 2, start: 0 })))
-}
-const getMark = async function() {
-    return await requests().get('/education/api/studentsubjectmark/getListMarkDetailStudent/' +uid)
-}
-const start = async function() {
- let x = await login();
-  let y = await getMark()
-  console.log(y);
+const fetchStudentTimeTable = async function() {
+  let { schoolYear, id } = await requests().get(
+    "/education/api/semester/semester_info"
+  );
+  let timeTableNonFomart = await requests().get(
+    "/education/api/StudentCourseSubject/student/0/" + id
+  );
+  let timetableData = parseTimeTableNew(
+    schoolYear.startDate,
+    timeTableNonFomart
+  );
+  return sortByDay(timetableData, (options = { limit: 2, start: 0 }))
 };
-
-start()
+const getMark = async function() {
+  return await requests().get(
+    "/education/api/studentsubjectmark/getListMarkDetailStudent/" + uid
+  );
+};
+module.exports = {
+  login,
+  fetchStudentTimeTable,
+  getMark,
+  fetchInformation
+};

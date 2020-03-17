@@ -1,5 +1,4 @@
 const jwt = require("jsonwebtoken");
-const { login, fetchInformation } = require("./../../modules/tlu_crawl/tlu");
 const UserModal = require("./../../models/User.modal");
 
 const loginController = async (req, res) => {
@@ -7,6 +6,12 @@ const loginController = async (req, res) => {
   let password = req.body.password;
     
   try {
+    if (parseInt(username.slice(0,2)) >= 19 ) {
+      
+      var { login, fetchInformation } = require("./../../modules/tlu_crawl/tluNew");
+    }else{
+      var { login, fetchInformation } = require("./../../modules/tlu_crawl/tlu");
+    }
     await login(username, password);
     let {studentInfo} = await fetchInformation();
     studentInfo.username = username;
