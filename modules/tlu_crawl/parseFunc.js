@@ -245,6 +245,7 @@ const formatTimeLearn = (timeLearn, roomStr) => {
   
 */
 const sortByDay = (studentTable, options = { limit: 1, start: 0 }) => {
+  //console.log(JSON.stringify(studentTable));
   var dayLearn = [];
   for (let i = 0; i < studentTable.length; i++) {
     const subject = studentTable[i];
@@ -255,15 +256,6 @@ const sortByDay = (studentTable, options = { limit: 1, start: 0 }) => {
       timeEnd = timeEnd.split("/");
       timeStart = new Date(timeStart[2], timeStart[1] - 1, timeStart[0]);
       timeEnd = new Date(timeEnd[2], timeEnd[1] - 1, timeEnd[0]);
-      //   if (options.start == 0 && timeEnd > new Date()) {
-
-      // }
-      //handle limit day
-      // if (options.limit > 0) {
-      //   if(timeEnd > timeStart.setDate(timeStart.getMonth() + 1)) {
-      //       timeEnd = timeStart.setDate(timeStart.getMonth() + 1)
-      //   }
-      // }
       var today = new Date();
       var todayMiliseconds = Date.parse(
         new Date(today.getFullYear(), today.getMonth(), today.getDate())
@@ -293,11 +285,6 @@ const sortByDay = (studentTable, options = { limit: 1, start: 0 }) => {
 
         var findDay = _.findIndex(dayLearn, { date: day });
 
-        // info: {
-        //   ngay: timeStart.getDate(),
-        //   thang: timeStart.getMonth() + 1,
-        //   name: timeStart.getFullYear()
-        // },
         if (findDay < 0) {
           dayLearn.push({
             date: day,
@@ -345,15 +332,12 @@ const sortByDay = (studentTable, options = { limit: 1, start: 0 }) => {
               ]
             });
           }
-
-          //console.log(Date.parse(timeStart), lesson, room)
         }
         var newDate = timeStart.setDate(timeStart.getDate() + 1);
         timeStart = new Date(newDate);
       }
     }
   }
-  // var rt = dayLearn.sort()
 
   return _.sortBy(dayLearn, ["date"]);
 };
@@ -372,18 +356,80 @@ const parseViewExam = $ => {
         .find("td")
         .nextAll();
       exam.push({
-        examName: $(x[1]).text().trim(),
-        examDay: $(x[3]).text().trim(),
-        examHour: $(x[4]).text().trim(),
-        examType: $(x[5]).text().trim(),
-        code: $(x[6]).text().trim(),
-        examRoom: $(x[7]).text().trim(),
-        examNote: $(x[8]).text().trim()
+        examName: $(x[1])
+          .text()
+          .trim(),
+        examDay: $(x[3])
+          .text()
+          .trim(),
+        examHour: $(x[4])
+          .text()
+          .trim(),
+        examType: $(x[5])
+          .text()
+          .trim(),
+        code: $(x[6])
+          .text()
+          .trim(),
+        examRoom: $(x[7])
+          .text()
+          .trim(),
+        examNote: $(x[8])
+          .text()
+          .trim()
       });
     }
   }
 
   return exam;
+};
+const weekIndexToDateString = (
+  semesterStart,
+  weekIndex,
+  number,
+  dayPlus = 0
+) => {
+  const timeStart = new Date(
+    semesterStart + (weekIndex + number) * 604800000 + dayPlus
+  );
+  return `${timeStart.getDate()}/${timeStart.getMonth() +
+    1}/${timeStart.getFullYear()}`;
+};
+const parseTimeTableNew = (semesterStart, timeTableNonFomart) => {
+  var timetableData = [];
+  for (let index = 0; index < timeTableNonFomart.length; index++) {
+    const subject = timeTableNonFomart[index];
+    timetableData.push({
+      displayName: subject.subjectName,
+      timetables: []
+    });
+    for (let j = 0; j < subject.courseSubject.timetables.length; j++) {
+      const timetable = subject.courseSubject.timetables[j];
+      //neow timebtable
+      try {
+        var itemNow = {
+          timeStart: weekIndexToDateString(semesterStart, timetable.fromWeek, -1),
+          timeEnd: weekIndexToDateString(semesterStart, timetable.toWeek, 0,  -86400000),
+          roomLearn: [{
+            dayOfWeek: timetable.weekIndex,
+            room: timetable.room.code
+          }],
+          timeLearn: [{
+            dayOfWeek: timetable.weekIndex,
+            lesson:
+              timetable.startHour.indexNumber +
+              ",to," +
+              timetable.endHour.indexNumber
+          }]
+        };
+        timetableData[index].timetables.push(itemNow);
+        // console.log(itemNow)
+      } catch (error) {
+        var itemNow = {};
+      }
+    }
+  }
+  return timetableData;
 };
 module.exports = {
   parseInputForm,
@@ -392,5 +438,7 @@ module.exports = {
   parseStudentTimeTable,
   formatTimeLearn,
   sortByDay,
-  parseViewExam
+  parseViewExam,
+  weekIndexToDateString,
+  parseTimeTableNew
 };

@@ -1,0 +1,12 @@
+{
+  "name": "tlu_crawl",
+  "version": "1.0.0",
+  "description": "",
+  "main": "tluNew.js",
+  "scripts": {
+    "test": "NODE_DEBUG=request node tluNew.js",
+    "start": "node tluNew.js"
+  },
+  "author": "nguyentri729",
+  "license": "ISC"
+}
