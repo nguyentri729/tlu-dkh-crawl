@@ -1,6 +1,8 @@
 # tlu-crawl
 
 Crawl Data từ trang đăng ký học trường ĐH Thủy Lợi (dkh.tlu.edu.vn)
+
+
 ## Install && Start
 
 
@@ -10,11 +12,11 @@ npm start
 ```
 ## Enviroment Variable
 ```bash
-DKH_USERNAME = tài khoản đăng ký học cho test
-DKH_PASSWORD = mật khẩu dkh
-MONGODB_USERNAME = username khi dùng mongodb
-MONGODB_PASSWORD = mật khẩu khi dùng mongodb
-JWT_SECURE = mã sign jsonwebtoken
+DKH_USERNAME = 
+DKH_PASSWORD = 
+DKH_PWD_MD5 = 
+MONGO_URL=
+JWT_SECURE = 
 PORT = 8080
 ```
-
+## Note
